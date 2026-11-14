@@ -1,0 +1,25 @@
+{
+    "nombre_modelo": "SVM con kernel RBF para clasificar conexiones de red",
+    "tipo_modelo": "Clasificación supervisada (StandardScaler + SVC rbf, C=1)",
+    "variables_modelo": [
+        "trafico_mbps",
+        "latencia_ms"
+    ],
+    "clases": {
+        "0": "Normal",
+        "1": "Sospechosa"
+    },
+    "rango_trafico_mbps": [
+        26.32,
+        106.97
+    ],
+    "rango_latencia_ms": [
+        37.55,
+        103.21
+    ],
+    "f1_validacion_cruzada": 0.963,
+    "accuracy_prueba": 0.97,
+    "sklearn_version": "1.6.1",
+    "joblib_version": "1.6.0",
+    "python_version": "3.13.18"
+}
