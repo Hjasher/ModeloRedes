@@ -8,6 +8,9 @@ import sklearn
 import streamlit as st
 import matplotlib.pyplot as plt
 
+NOMBRE = "Hjasher Medina"
+CUENTA = "20231900178"
+
 st.set_page_config(page_title="Clasificador de conexiones", layout="centered")
 
 COLORES = ["#0891b2", "#f97316"]
@@ -16,7 +19,7 @@ VARIABLES = ["trafico_mbps", "latencia_ms"]
 
 @st.cache_resource
 def cargar():
-    # Modelo entrenado en el notebook (SVM RBF con su escalador), sus metadatos y los datos para dibujar
+    
     base = Path(__file__).parent
     modelo = joblib.load(base / "svm_rbf_conexiones.pkl")
     meta = json.loads((base / "model_metadata.json").read_text(encoding="utf-8"))
@@ -27,6 +30,8 @@ def cargar():
 modelo, meta, datos = cargar()
 
 st.title("Clasificador de conexiones de red")
+st.markdown(f"**Nombre completo** {NOMBRE}")
+st.markdown(f"**Número de cuenta** {CUENTA}")
 st.caption(
     f"{meta['nombre_modelo']}. Datos sintéticos y educativos, no es un detector real de ataques. "
     f"Accuracy en prueba {meta['accuracy_prueba']:.2f}."
@@ -37,9 +42,26 @@ if sklearn.__version__ != meta["sklearn_version"]:
         "Fija esa versión en requirements.txt."
     )
 
-col1, col2 = st.columns(2)
-trafico = col1.slider("Tráfico (Mbps)", 0.0, 150.0, 50.0, 0.5)
-latencia = col2.slider("Latencia (ms)", 0.0, 200.0, 30.0, 0.5)
+with st.form("formulario"):
+    col1, col2 = st.columns(2)
+    trafico_in = col1.number_input("Tráfico (Mbps)", min_value=0.0, value=None, step=0.5, format="%.2f",
+                                   placeholder="Escriba el tráfico")
+    latencia_in = col2.number_input("Latencia (ms)", min_value=0.0, value=None, step=0.5, format="%.2f",
+                                    placeholder="Escriba la latencia")
+    enviado = st.form_submit_button("Clasificar conexión")
+
+if enviado:
+    if trafico_in is None or latencia_in is None:
+        st.error("Escriba los dos valores antes de clasificar.")
+    else:
+        st.session_state["consulta"] = (float(trafico_in), float(latencia_in))
+
+if "consulta" not in st.session_state:
+    st.info("Escriba el tráfico y la latencia, y pulse Clasificar conexión.")
+    st.stop()
+
+trafico, latencia = st.session_state["consulta"]
+st.write(f"Conexión consultada con {trafico:.2f} Mbps de tráfico y {latencia:.2f} ms de latencia.")
 
 punto = pd.DataFrame({"trafico_mbps": [trafico], "latencia_ms": [latencia]})
 clase = int(modelo.predict(punto)[0])
